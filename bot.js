@@ -29,7 +29,7 @@ const setIntervalAndExecute = () => {
 
 bot.start((ctx) => {
     USER_ID = ctx.message.from.id
-    const interval = setInterval(setIntervalAndExecute, 5000)
+    const interval = setInterval(setIntervalAndExecute, 3600000)
     ctx.reply(`Welcome ${ctx.message.from.first_name}`)
 })
 bot.help((ctx) => ctx.reply('Enter a symbol'))
