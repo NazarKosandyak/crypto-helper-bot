@@ -43,7 +43,7 @@ axios.get(`https://api.coingecko.com/api/v3/coins/${ctx.message.text.toLowerCase
 💲  Symbol : ${res.data.symbol}
 🏷️ Current price : ${ res.data.market_data.current_price.usd + '$'}
 🟡 Binance : ${res.data.tickers.find(coin => coin.market.name === 'Binance') ? res.data.tickers.find(coin => coin.market.name === 'Binance').last + "$" : 'Not listing yet'}
-🟢 MEXC Global : ${res.data.tickers.find(coin => coin.market.name === 'MEXC Global') ? res.data.tickers.find(coin => coin.market.name === 'MEXC Global').last + "$" : 'Not listing yes'}
+🟢 MEXC Global : ${res.data.tickers.find(coin => coin.market.name === 'MEXC Global') ? res.data.tickers.find(coin => coin.market.name === 'MEXC Global').last + "$" : 'Not listing yet'}
 🔵 CEX.IO : ${res.data.tickers.find(coin => coin.market.name === 'CEX.IO') ? res.data.tickers.find(coin => coin.market.name === 'CEX.IO').last + "$" : 'Not listing yet'}
 🟠 OKEx : ${res.data.tickers.find(coin => coin.market.name === 'OKEx') ? res.data.tickers.find(coin => coin.market.name === 'OKEx').last + "$" : 'Not listing yet'}
             `
