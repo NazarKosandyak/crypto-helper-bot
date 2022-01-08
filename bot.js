@@ -4,47 +4,57 @@ const axios = require('axios');
 // *********************************
 let formatData = ``
 let USER_ID = ''
-let coins = []
+let currentToken = {}
 
-const getDataPerHour = async () => {
-    const { data } = await axios.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false')
-    coins = data
+const getChosenToken = async () => {
+   const {data} =  await axios.get('https://api.coingecko.com/api/v3/coins/stellar');
+   currentToken = data
+
 }
-getDataPerHour()
+getChosenToken()
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 const setIntervalAndExecute = () => {
-    const getCoin = coins.find(coin => coin.symbol === 'xlm')
-    formatData = `  💰 Coin : ${getCoin.name}
-🏷️ Current price : ${getCoin.current_price.toLocaleString() + '$'}
-🟢 High24h : ${getCoin.high_24h.toLocaleString() + '$'}
-🔴 Low24h : ${getCoin.low_24h.toLocaleString() + '$'}
-📈 Price chage 24h : ${getCoin.price_change_24h.toLocaleString() + '$'}
+    
+    formatData = `  💰 Coin : ${currentToken.id}
+💲  Symbol : ${currentToken.symbol}
+🏷️ Current price : ${currentToken.market_data.current_price.usd + '$'}
+🟡 Binance : ${currentToken.tickers.find(coin => coin.market.name === 'Binance').last + "$"}
+🟢 MEXC Global : ${currentToken.tickers.find(coin => coin.market.name === 'MEXC Global').last + "$"}
+🔵 CEX.IO : ${currentToken.tickers.find(coin => coin.market.name === 'CEX.IO').last + "$"}
+🟠 OKEx : ${currentToken.tickers.find(coin => coin.market.name === 'OKEx').last + "$"}
     `
     bot.telegram.sendMessage(USER_ID, formatData)  
 }
 
 bot.start((ctx) => {
     USER_ID = ctx.message.from.id
-    const interval = setInterval(setIntervalAndExecute, 3600000)
+    const interval = setInterval(setIntervalAndExecute, 5000)
     ctx.reply(`Welcome ${ctx.message.from.first_name}`)
 })
 bot.help((ctx) => ctx.reply('Enter a symbol'))
+bot.on('text',  (ctx) => {
+    
+axios.get(`https://api.coingecko.com/api/v3/coins/${ctx.message.text.toLowerCase()}`)
+.then(res => {
+     if(res.status == '200'){
+        formatData = `
+💰 Coin : ${res.data.id}
+💲  Symbol : ${res.data.symbol}
+🏷️ Current price : ${ res.data.market_data.current_price.usd + '$'}
+🟡 Binance : ${res.data.tickers.find(coin => coin.market.name === 'Binance') ? res.data.tickers.find(coin => coin.market.name === 'Binance').last + "$" : 'Not listing yet'}
+🟢 MEXC Global : ${res.data.tickers.find(coin => coin.market.name === 'MEXC Global') ? res.data.tickers.find(coin => coin.market.name === 'MEXC Global').last + "$" : 'Not listing yes'}
+🔵 CEX.IO : ${res.data.tickers.find(coin => coin.market.name === 'CEX.IO') ? res.data.tickers.find(coin => coin.market.name === 'CEX.IO').last + "$" : 'Not listing yet'}
+🟠 OKEx : ${res.data.tickers.find(coin => coin.market.name === 'OKEx') ? res.data.tickers.find(coin => coin.market.name === 'OKEx').last + "$" : 'Not listing yet'}
+            `
+            ctx.reply(formatData)
+        }
+    })
+    .catch(err => {
+        formatData = `${err.response?.data.error} - ${ctx.message.text}`
+        ctx.reply(formatData)
+    })
 
-bot.on('text', async (ctx) => {
-    const getCurrentCoin = await coins.find(coin => coin.symbol === ctx.message.text.toLowerCase())
-   if(getCurrentCoin){
-formatData = `💰 Coin : ${getCurrentCoin.name}
-🏷️ Current price : ${getCurrentCoin.current_price.toLocaleString() + '$'}
-🟢 High24h : ${getCurrentCoin.high_24h.toLocaleString() + '$'}
-🔴 Low24h : ${getCurrentCoin.low_24h.toLocaleString() + '$'}
-📈 Price chage 24h : ${getCurrentCoin.price_change_24h.toLocaleString() + '$'}
-`
-   }
-   else {
-       formatData = `"${ctx.message.text}" is unknown`
-   }
-    ctx.reply(formatData)
 })
 bot.hears('hi', (ctx) => ctx.reply('Hey there'))
 bot.launch()
